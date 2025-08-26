@@ -6,8 +6,10 @@
 *.exe
 *.out
 
-# Compiled binaries (except the main vu executable)
-vu/vu
+# Compiled binaries
+bin/
+*.exe
+*.out
 
 # Debug files
 *.dSYM/

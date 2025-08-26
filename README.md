@@ -2,6 +2,9 @@
 
 A hardware-based VU (Volume Unit) meter project for audio visualization using analogue components and a Raspberry Pi.
 
+## NOTE
+The pi zero through pcp is currently expecting the executable to be at scripts/vu - so the next time you upload this you might have to change that. 
+
 ## Overview
 
 This project implements a VU meter that displays audio levels using analogue hardware components, controlled by software running on a Raspberry Pi. The VU meter provides real-time visual feedback of audio input levels.
@@ -10,12 +13,14 @@ This project implements a VU meter that displays audio levels using analogue har
 
 ```
 hardware_musicbox_analogue_vu_meter/
-├── vu/                    # VU meter software
-│   ├── vu.c              # C source code for VU meter
-│   └── vu                # Compiled executable
-├── README.md             # This file
-├── .gitignore           # Git ignore rules
-└── LICENSE              # Project license
+├── src/                  # Source code
+│   └── vu.c             # C source code for VU meter
+├── bin/                  # Compiled executables (not in git)
+│   └── vu               # Compiled VU meter
+├── README.md            # This file
+├── Makefile             # Build configuration
+├── .gitignore          # Git ignore rules
+└── LICENSE             # Project license
 ```
 
 ## Features
@@ -53,15 +58,14 @@ GND ------> VU Meter (−)
    cd hardware_musicbox_analogue_vu_meter
    ```
 
-2. Compile the VU meter software:
+2. Build the VU meter software:
    ```bash
-   cd vu
-   gcc -o vu vu.c -lasound
+   make
    ```
 
 3. Run the VU meter:
    ```bash
-   ./vu
+   make run
    ```
 
 ## Usage
@@ -77,8 +81,12 @@ Hardware setup instructions will be added as the project develops.
 ### Building from Source
 
 ```bash
-cd vu
-gcc -Wall -o vu vu.c -lasound
+make
+```
+
+Or manually:
+```bash
+gcc -Wall -o bin/vu src/vu.c -lasound
 ```
 
 ### Debugging
