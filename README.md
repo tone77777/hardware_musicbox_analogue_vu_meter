@@ -47,7 +47,8 @@ GND ------> VU Meter (−)
 
 ### Software
 - GCC compiler
-- ALSA audio libraries
+- ALSA audio libraries (`libasound2-dev`)
+- WiringPi library (`libwiringpi-dev`)
 - Git
 
 ## Installation
