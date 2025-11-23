@@ -54,6 +54,9 @@ if [ -z "$SHM_FILE" ]; then
     SHM_FILE="/dev/shm/squeezelite-b8:27:eb:d3:0b:23"
 fi
 
+# Blank/wipe the log file on each startup
+> "$LOG_FILE"
+
 # Save original stdout/stderr before redirecting
 exec 3>&1 4>&2
 
@@ -152,7 +155,7 @@ log_message "VU meter started with PID: $NEW_PID"
 sleep 2
 if ! kill -0 "$NEW_PID" 2>/dev/null; then
     log_message "ERROR: VU meter process died immediately after starting"
-    log_message "Check if WiringPi is available and GPIO 13 is free"
+    log_message "Check if WiringPi is available and GPIO 18 is free"
     rm -f "$PIDFILE"
     exit 1
 fi

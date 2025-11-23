@@ -6,7 +6,7 @@ A hardware-based VU (Volume Unit) meter project for audio visualization using an
 
 - **Root Required**: The program must run with `sudo` for GPIO access
 - **Squeezelite Dependency**: Squeezelite must be running and creating the shared memory file
-- **GPIO Pin**: Uses GPIO 13 (BCM numbering) for PWM output - make sure nothing else is using this pin
+- **GPIO Pin**: Uses GPIO 18 (BCM numbering) for PWM output - make sure nothing else is using this pin
 - **File Location**: The pi zero through pcp may be expecting the executable at `scripts/vu` - adjust paths as needed 
 
 ## Overview
@@ -43,17 +43,17 @@ hardware_musicbox_analogue_vu_meter/
 ### Hardware
 - Raspberry Pi (tested on Raspberry Pi Zero W with piCorePlayer)
 - Squeezelite player running (creates shared memory file)
-- Analogue VU meter connected to GPIO 13 (PWM output)
+- Analogue VU meter connected to GPIO 18 (PWM output)
 - Power supply
 
 ### Hardware Connection
-GPIO 13 (PWM) ----[ 10kΩ ]-----+----> VU Meter (+)
+GPIO 18 (PWM) ----[ 10kΩ ]-----+----> VU Meter (+)
 |
 [10µF capacitor]
 |
 GND ------> VU Meter (−)
 
-**Note:** GPIO 13 is used for hardware PWM output. The PWM signal is filtered through a 10µF capacitor and 10kΩ resistor to create a smooth DC voltage for the VU meter.
+**Note:** GPIO 18 is used for hardware PWM output. The PWM signal is filtered through a 10µF capacitor and 10kΩ resistor to create a smooth DC voltage for the VU meter.
 
 ### Software
 - GCC compiler
@@ -85,7 +85,7 @@ GND ------> VU Meter (−)
 
 ### How It Works
 
-The VU meter reads raw PCM audio data from Squeezelite's shared memory file (`/dev/shm/squeezelite-<MAC-ADDRESS>`). It calculates the RMS (Root Mean Square) audio level and outputs a PWM signal on GPIO 13 proportional to the volume level.
+The VU meter reads raw PCM audio data from Squeezelite's shared memory file (`/dev/shm/squeezelite-<MAC-ADDRESS>`). It calculates the RMS (Root Mean Square) audio level and outputs a PWM signal on GPIO 18 proportional to the volume level.
 
 ### Finding Your Squeezelite Shared Memory File
 
@@ -178,13 +178,13 @@ To start the VU meter automatically on boot:
 - **Updates every 30ms**: Reads audio data and updates GPIO PWM output
 - **Silence detection**: If audio level is constant for 3 samples, sets output to 0
 - **Graceful shutdown**: If Squeezelite shared memory file is not found after 10 attempts (~3 seconds), exits gracefully
-- **GPIO output**: PWM signal on GPIO 13, range 0-500 (0-100% VU level)
+- **GPIO output**: PWM signal on GPIO 18, range 0-500 (0-100% VU level)
 
 ## Hardware Setup
 
 ### GPIO Configuration
 
-- **GPIO Pin**: 13 (BCM numbering)
+- **GPIO Pin**: 18 (BCM numbering)
 - **Mode**: PWM output
 - **PWM Range**: 0-2000
 - **PWM Clock**: 192
@@ -192,10 +192,10 @@ To start the VU meter automatically on boot:
 
 ### VU Meter Connection
 
-Connect your analogue VU meter to GPIO 13 through a low-pass filter:
+Connect your analogue VU meter to GPIO 18 through a low-pass filter:
 
 ```
-GPIO 13 (PWM) ----[ 10kΩ resistor ]-----+----> VU Meter (+)
+GPIO 18 (PWM) ----[ 10kΩ resistor ]-----+----> VU Meter (+)
                                          |
                                     [10µF capacitor]
                                          |
@@ -248,7 +248,7 @@ cat start_vu_meter.log
 1. **"Could not open shared memory file"**: Squeezelite is not running or MAC address is wrong
 2. **"WiringPi setup failed"**: WiringPi library not loaded (`tce-load -i wiringpi-tcz`)
 3. **GPIO not working**: Need root privileges (`sudo`)
-4. **No PWM output**: Check GPIO 13 is not used by another process
+4. **No PWM output**: Check GPIO 18 is not used by another process
 
 ## Contributing
 
