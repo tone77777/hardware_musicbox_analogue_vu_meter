@@ -98,15 +98,32 @@ void loop_vu(const char *filename, int debug_mode) {
     int last_values[3] = {-1, -1, -1};
     int silence_mode = 0;
     int value_index = 0;
+    int consecutive_failures = 0;
+    const int MAX_CONSECUTIVE_FAILURES = 10;  // Exit after 10 consecutive failures (~300ms * 10 = 3 seconds)
 
     while (1) {
         FILE *f = fopen(filename, "rb");
         if (!f) {
-            printf("Could not open %s\n", filename);
+            consecutive_failures++;
+            if (consecutive_failures >= MAX_CONSECUTIVE_FAILURES) {
+                printf("ERROR: Could not open %s after %d attempts\n", filename, MAX_CONSECUTIVE_FAILURES);
+                printf("Squeezelite may not be running or the shared memory file doesn't exist.\n");
+                printf("Exiting gracefully...\n");
+                set_gpio_level(0);  // Turn off VU meter
+                return;  // Exit gracefully
+            }
+            // Only print error every few attempts to avoid spam
+            if (consecutive_failures == 1 || consecutive_failures % 5 == 0) {
+                printf("Warning: Could not open %s (attempt %d/%d)\n", 
+                       filename, consecutive_failures, MAX_CONSECUTIVE_FAILURES);
+            }
             set_gpio_level(0);
             usleep(VU_INTERVAL_MS * 1000);
             continue;
         }
+        
+        // Reset failure counter on successful open
+        consecutive_failures = 0;
 
         fseek(f, 0, SEEK_END);
         long filesize = ftell(f);
