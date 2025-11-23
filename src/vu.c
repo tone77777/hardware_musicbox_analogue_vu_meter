@@ -8,6 +8,7 @@ gcc -o vu vu.c -lasound -lwiringPi  -lm]
 to run: sudo ./vu /dev/shm/squeezelite-b8:27:eb:d3:0b:23
 */
 
+#define _POSIX_C_SOURCE 200809L  // For popen, pclose, usleep
 #define VUMETER_DEFAULT_SAMPLE_WINDOW 1024 * 2
 
 // Standalone C function to calculate average VU from stereo PCM data
@@ -18,6 +19,8 @@ to run: sudo ./vu /dev/shm/squeezelite-b8:27:eb:d3:0b:23
 #include <unistd.h>
 #include <wiringPi.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // Set the interval (in milliseconds) between VU calculations
 #define VU_INTERVAL_MS 30
@@ -139,7 +142,7 @@ void loop_vu(const char *filename, int debug_mode) {
         }
         size_t read = fread(buffer, 1, filesize, f);
         fclose(f);
-        if (read != filesize) {
+        if (read != (size_t)filesize) {
             printf("File read error\n");
             free(buffer);
             set_gpio_level(0);

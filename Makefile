@@ -2,7 +2,7 @@
 
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99
-LDFLAGS = -lasound -lwiringPi
+LDFLAGS = -lasound -lwiringPi -lm
 TARGET = bin/vu
 SOURCE = src/vu.c
 
