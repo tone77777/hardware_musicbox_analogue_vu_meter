@@ -87,10 +87,12 @@ int is_playing() {
     return 0;
 }
 
-void loop_vu(const char *filename, int debug_mode) {
+void loop_vu(const char *filename, int debug_mode, int quiet_mode) {
     // WiringPi setup
     if (wiringPiSetupGpio() == -1) {
-        printf("WiringPi setup failed\n");
+        if (!quiet_mode) {
+            printf("WiringPi setup failed\n");
+        }
         return;
     }
     pinMode(GPIO_PIN, PWM_OUTPUT);
@@ -109,14 +111,16 @@ void loop_vu(const char *filename, int debug_mode) {
         if (!f) {
             consecutive_failures++;
             if (consecutive_failures >= MAX_CONSECUTIVE_FAILURES) {
-                printf("ERROR: Could not open %s after %d attempts\n", filename, MAX_CONSECUTIVE_FAILURES);
-                printf("Squeezelite may not be running or the shared memory file doesn't exist.\n");
-                printf("Exiting gracefully...\n");
+                if (!quiet_mode) {
+                    printf("ERROR: Could not open %s after %d attempts\n", filename, MAX_CONSECUTIVE_FAILURES);
+                    printf("Squeezelite may not be running or the shared memory file doesn't exist.\n");
+                    printf("Exiting gracefully...\n");
+                }
                 set_gpio_level(0);  // Turn off VU meter
                 return;  // Exit gracefully
             }
-            // Only print error every few attempts to avoid spam
-            if (consecutive_failures == 1 || consecutive_failures % 5 == 0) {
+            // Only print error every few attempts to avoid spam (and only if not quiet)
+            if (!quiet_mode && (consecutive_failures == 1 || consecutive_failures % 5 == 0)) {
                 printf("Warning: Could not open %s (attempt %d/%d)\n", 
                        filename, consecutive_failures, MAX_CONSECUTIVE_FAILURES);
             }
@@ -134,7 +138,9 @@ void loop_vu(const char *filename, int debug_mode) {
         size_t num_frames = filesize / 4;
         int16_t *buffer = malloc(filesize);
         if (!buffer) {
-            printf("Memory allocation failed\n");
+            if (!quiet_mode) {
+                printf("Memory allocation failed\n");
+            }
             fclose(f);
             set_gpio_level(0);
             usleep(VU_INTERVAL_MS * 1000);
@@ -143,7 +149,9 @@ void loop_vu(const char *filename, int debug_mode) {
         size_t read = fread(buffer, 1, filesize, f);
         fclose(f);
         if (read != (size_t)filesize) {
-            printf("File read error\n");
+            if (!quiet_mode) {
+                printf("File read error\n");
+            }
             free(buffer);
             set_gpio_level(0);
             usleep(VU_INTERVAL_MS * 1000);
@@ -175,12 +183,14 @@ void loop_vu(const char *filename, int debug_mode) {
         int pwm_level = output_vu * MAX_PWM / 100;
         set_gpio_level(pwm_level);
 
-        // Output
-        if (debug_mode) {
-            printf("%d\n", output_vu);
-        } else {
-            printf("[%-100.*s] %3d\r", output_vu, "####################################################################################################", output_vu);
-            fflush(stdout);
+        // Output (skip if quiet mode)
+        if (!quiet_mode) {
+            if (debug_mode) {
+                printf("%d\n", output_vu);
+            } else {
+                printf("[%-100.*s] %3d\r", output_vu, "####################################################################################################", output_vu);
+                fflush(stdout);
+            }
         }
         free(buffer);
         usleep(VU_INTERVAL_MS * 1000);
@@ -190,19 +200,38 @@ void loop_vu(const char *filename, int debug_mode) {
 
 int main(int argc, char *argv[]) {
     int debug_mode = 0;
+    int quiet_mode = 0;
     const char *filename = NULL;
+    
     for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "-d") == 0) {
+        if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--debug") == 0) {
             debug_mode = 1;
+        } else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0) {
+            quiet_mode = 1;
+        } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+            printf("Usage: %s [OPTIONS] <pcm_file>\n", argv[0]);
+            printf("Options:\n");
+            printf("  -d, --debug    Debug mode (print VU values as numbers)\n");
+            printf("  -q, --quiet    Quiet mode (no screen output, GPIO only)\n");
+            printf("  -h, --help     Show this help message\n");
+            printf("\n");
+            printf("Example:\n");
+            printf("  %s /dev/shm/squeezelite-b8:27:eb:d3:0b:23\n", argv[0]);
+            printf("  %s -q /dev/shm/squeezelite-b8:27:eb:d3:0b:23  # Background/daemon mode\n", argv[0]);
+            return 0;
         } else {
             filename = argv[i];
         }
     }
+    
     if (!filename) {
-        printf("Usage: %s [-d] <pcm_file>\n", argv[0]);
+        fprintf(stderr, "Error: PCM file path required\n");
+        fprintf(stderr, "Usage: %s [OPTIONS] <pcm_file>\n", argv[0]);
+        fprintf(stderr, "Use -h or --help for more information\n");
         return 1;
     }
-    // Pass debug_mode to loop_vu
-    loop_vu(filename, debug_mode);
+    
+    // Pass modes to loop_vu
+    loop_vu(filename, debug_mode, quiet_mode);
     return 0;
 }
