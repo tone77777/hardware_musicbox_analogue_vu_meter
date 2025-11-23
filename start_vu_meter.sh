@@ -152,7 +152,7 @@ log_message "VU meter started with PID: $NEW_PID"
 sleep 2
 if ! kill -0 "$NEW_PID" 2>/dev/null; then
     log_message "ERROR: VU meter process died immediately after starting"
-    log_message "Check if WiringPi is available and GPIO 18 is free"
+    log_message "Check if WiringPi is available and GPIO 13 is free"
     rm -f "$PIDFILE"
     exit 1
 fi
