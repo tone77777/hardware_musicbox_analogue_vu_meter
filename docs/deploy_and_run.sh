@@ -1,0 +1,1 @@
+cd ~/scripts/; sudo rm -r hardware_musicbox_analogue_vu_meter; sudo git clone https://github.com/tone77777/hardware_musicbox_analogue_vu_meter; cd hardware_musicbox_analogue_vu_meter; sudo make; sudo chmod +x start_vu_meter.sh; sudo ./start_vu_meter.sh; sudo chmod +x stop_vu_meter.sh; sudo ./stop_vu_meter.sh; pcp bu

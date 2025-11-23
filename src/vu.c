@@ -27,7 +27,7 @@ to run: sudo ./vu /dev/shm/squeezelite-b8:27:eb:d3:0b:23
 // Set the scaling factor for the VU output
 #define VU_SCALE_FACTOR 2.5
 
-#define GPIO_PIN 18
+#define GPIO_PIN 13
 #define PWM_RANGE 2000
 #define PWM_CLOCK 192
 #define MAX_PWM 500
